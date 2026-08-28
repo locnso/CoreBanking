@@ -11,8 +11,9 @@ var postgres = builder.AddPostgres("postgres")
 
 var coreBankingDb = postgres.AddDatabase("corebanking-db", "corebankng");
 
-
-var migrationService = builder.AddProject<Projects.CoreBanking_MigrationService>("corebanking-migrationservice");
+var migrationService = builder.AddProject<Projects.CoreBanking_MigrationService>("corebanking-migrationservice")
+    .WithReference(coreBankingDb)
+    .WaitFor(coreBankingDb);
 
 builder.AddProject<Projects.CoreBanking_API>("corebanking-api")
        .WithReference(coreBankingDb)
