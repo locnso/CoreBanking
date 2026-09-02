@@ -9,7 +9,7 @@ var postgres = builder.AddPostgres("postgres")
                           rbuilder.WithImageTag("latest");
                       });
 
-var coreBankingDb = postgres.AddDatabase("corebanking-db", "corebankng");
+var coreBankingDb = postgres.AddDatabase("corebanking-db", "corebanking");
 
 var migrationService = builder.AddProject<Projects.CoreBanking_MigrationService>("corebanking-migrationservice")
     .WithReference(coreBankingDb)
