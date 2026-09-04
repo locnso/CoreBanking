@@ -1,10 +1,9 @@
-﻿namespace CoreBanking.API.Models
+﻿namespace CoreBanking.API.Models;
+
+public class PaginationResponse<TEntity>(int pageIndex, int pageSize, long count, IEnumerable<TEntity> items)
 {
-    public class PaginationResponse<TEntity>(int index, int pageSize, long count, IEnumerable<TEntity> items)
-    {
-        public int Index { get => index; }
-        public int PageSize { get => pageSize; }
-        public long TotalCount { get => count; }
-        public IEnumerable<TEntity> Items { get => items; }
-    }
+    public int PageIndex { get => pageIndex; }
+    public int PageSize { get => pageSize; }
+    public long TotalCount { get => count; }
+    public IEnumerable<TEntity> Items { get => items; }
 }

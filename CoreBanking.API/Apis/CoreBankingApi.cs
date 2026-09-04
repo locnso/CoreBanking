@@ -1,6 +1,9 @@
 ﻿using CoreBanking.API.Models;
 using CoreBanking.API.Services;
-using System.Runtime.CompilerServices;
+using CoreBanking.Infrastructure.Entity;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace CoreBanking.API.Apis;
 
@@ -48,15 +51,41 @@ public static class CoreBankingApi
         throw new NotImplementedException();
     }
 
-    private static async Task CreateCustomer(HttpContext context)
+    private static async Task<Results<Ok<Customer>, BadRequest>> CreateCustomer(
+        [AsParameters] CoreBankingServices services,
+        [FromBody] Customer customer)
     {
-        throw new NotImplementedException();
+        if (string.IsNullOrWhiteSpace(customer.Name))
+        {
+            services.Logger.LogError("Customer name invalid");
+            return TypedResults.BadRequest();
+        }
+        customer.Address ??= "";
+
+        if (customer.Id == Guid.Empty)
+        {
+            customer.Id = Guid.NewGuid();
+        }
+        services.DbContext.Customers.Add(customer);
+        await services.DbContext.SaveChangesAsync();
+
+        services.Logger.LogInformation("Customer created successfully");
+        return TypedResults.Ok(customer);
     }
 
-    private static async Task GetCustomers(
+    private static async Task<Ok<PaginationResponse<Customer>>> GetCustomers(
         [AsParameters] CoreBankingServices services,
         [AsParameters] PaginationRequest pagination)
     {
-        throw new NotImplementedException();
+        return TypedResults.Ok(new PaginationResponse<Customer>(
+            pagination.PageIndex,
+            pagination.PageSize,
+            await services.DbContext.Customers.CountAsync(),
+            await services.DbContext.Customers
+            .OrderBy(c => c.Name)
+            .Skip(pagination.PageIndex * pagination.PageSize)
+            .Take(pagination.PageSize)
+            .ToListAsync()
+            ));
     }
 }
