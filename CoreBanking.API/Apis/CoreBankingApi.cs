@@ -26,7 +26,7 @@ public static class CoreBankingApi
         return builder;
     }
 
-    private static async Task<Results<Ok, BadRequest>> Transfer(
+    public static async Task<Results<Ok, BadRequest>> Transfer(
         [AsParameters] CoreBankingServices services,
         Guid id, TransferRequest transfer)
     {
@@ -101,7 +101,7 @@ public static class CoreBankingApi
         }
     }
 
-    private static async Task<Results<Ok<Account>, BadRequest>> Withdraw(
+    public static async Task<Results<Ok<Account>, BadRequest>> Withdraw(
         [AsParameters] CoreBankingServices services,
         Guid id, WithdrawalRequest withdrawal)
     {
@@ -156,7 +156,7 @@ public static class CoreBankingApi
         return TypedResults.Ok(account);
     }
 
-    private static async Task<Results<Ok<Account>, BadRequest>> Deposit(
+    public static async Task<Results<Ok<Account>, BadRequest>> Deposit(
         [AsParameters] CoreBankingServices services,
         Guid id, DepositionRequest deposition)
     {
@@ -207,7 +207,7 @@ public static class CoreBankingApi
     }
 
     #region Account
-    private static async Task<Results<Ok<Account>, BadRequest>> CreateAccount(
+    public static async Task<Results<Ok<Account>, BadRequest>> CreateAccount(
         [AsParameters] CoreBankingServices services,
         [FromBody] Account account)
     {
@@ -231,7 +231,7 @@ public static class CoreBankingApi
         return TypedResults.Ok(account);
     }
 
-    private static async Task<Ok<PaginationResponse<Account>>> GetAccounts(
+    public static async Task<Ok<PaginationResponse<Account>>> GetAccounts(
         [AsParameters] CoreBankingServices services,
         [AsParameters] PaginationRequest pagination,
         Guid? customerId = null)
@@ -255,7 +255,7 @@ public static class CoreBankingApi
     #endregion
 
     #region Customer
-    private static async Task<Results<Ok<Customer>, BadRequest>> CreateCustomer(
+    public static async Task<Results<Ok<Customer>, BadRequest>> CreateCustomer(
         [AsParameters] CoreBankingServices services,
         [FromBody] Customer customer)
     {
@@ -277,7 +277,7 @@ public static class CoreBankingApi
         return TypedResults.Ok(customer);
     }
 
-    private static async Task<Ok<PaginationResponse<Customer>>> GetCustomers(
+    public static async Task<Ok<PaginationResponse<Customer>>> GetCustomers(
         [AsParameters] CoreBankingServices services,
         [AsParameters] PaginationRequest pagination)
     {
@@ -300,17 +300,17 @@ public static class CoreBankingApi
     }
 }
 
-class DepositionRequest
+public class DepositionRequest
 {
     public decimal Amount { get; set; }
 }
 
-class WithdrawalRequest
+public class WithdrawalRequest
 {
     public decimal Amount { get; set; }
 }
 
-class TransferRequest
+public class TransferRequest
 {
     public decimal Amount { get; set; }
     public string DestinationAccountNumber { get; set; } = default!;
