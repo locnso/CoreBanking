@@ -8,21 +8,20 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace CoreBanking.UnitTests
 {
-    public class CoreBankingUnitTests
+    public class CoreBankingUnitTests : IClassFixture<SqliteFixture>
     {
-        private SqliteConnection _sqliteConnection = default!;
-        private DbContextOptions<CoreBankingDbContext> _dbContextOptions = default!;
+        private readonly SqliteFixture _fixture;
+
+        public CoreBankingUnitTests(SqliteFixture fixture)
+        {
+            _fixture = fixture;
+        }
 
         [Fact]
         public async Task Create_Customer_Test()
         {
             // Arrange
-            _sqliteConnection = new SqliteConnection("data source=:memory:");
-            _sqliteConnection.Open();
-            _dbContextOptions = new DbContextOptionsBuilder<CoreBankingDbContext>()
-                .UseSqlite(_sqliteConnection).Options;
-            using var _dbContext = new CoreBankingDbContext(_dbContextOptions);
-            _dbContext.Database.EnsureCreated();
+            using var _dbContext = new CoreBankingDbContext(_fixture.contextOptions);
 
             var customer = new Customer
             {
@@ -54,12 +53,7 @@ namespace CoreBanking.UnitTests
         public void Create_Customer_And_Deposit_Test(decimal deposit)
         {
             // Arrange
-            _sqliteConnection = new SqliteConnection("data source=:memory:");
-            _sqliteConnection.Open();
-            _dbContextOptions = new DbContextOptionsBuilder<CoreBankingDbContext>()
-                .UseSqlite(_sqliteConnection).Options;
-            using var _dbContext = new CoreBankingDbContext(_dbContextOptions);
-            _dbContext.Database.EnsureCreated();
+            using var _dbContext = new CoreBankingDbContext(_fixture.contextOptions);
 
             var customer = new Customer
             {
@@ -108,12 +102,7 @@ namespace CoreBanking.UnitTests
         public async Task Create_Customer_And_Transfer_Test()
         {
             // Arrange
-            var sqliteConnection = new SqliteConnection("data source=:memory:");
-            sqliteConnection.Open();
-            var dbContextOptions = new DbContextOptionsBuilder<CoreBankingDbContext>()
-                .UseSqlite(sqliteConnection).Options;
-            using var dbContext = new CoreBankingDbContext(dbContextOptions);
-            dbContext.Database.EnsureCreated();
+            using var dbContext = new CoreBankingDbContext(_fixture.contextOptions);
             var services = new CoreBankingServices(dbContext, NullLogger<CoreBankingServices>.Instance);
 
             var accountSend = new Account
