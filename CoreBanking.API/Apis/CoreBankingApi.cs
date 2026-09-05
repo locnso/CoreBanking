@@ -217,13 +217,19 @@ public static class CoreBankingApi
             return TypedResults.BadRequest();
         }
 
-        account.Number = GenerateAccountNumber();
-        account.Balance = 0;
-
         if (account.Id == Guid.Empty)
         {
             account.Id = Guid.NewGuid();
         }
+
+        if (account.Balance < 0)
+        {
+            services.Logger.LogError("Balance can not be negative");
+            return TypedResults.BadRequest();
+        }
+
+        account.Number = GenerateAccountNumber();
+        
         services.DbContext.Accounts.Add(account);
         await services.DbContext.SaveChangesAsync();
 
