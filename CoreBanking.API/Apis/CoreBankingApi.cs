@@ -16,7 +16,7 @@ public static class CoreBankingApi
 
         v1.MapGet("/customers", GetCustomers);
         v1.MapGet("/customers/{id:guid}", GetCustomerById);
-        v1.MapPost("/customers", CreateCustomer);
+        v1.MapPost("/customers", CreateCustomer).RequireAuthorization();
 
         v1.MapGet("/accounts", GetAccounts);
         v1.MapGet("/accounts/{id}", GetAccountByNumber);
