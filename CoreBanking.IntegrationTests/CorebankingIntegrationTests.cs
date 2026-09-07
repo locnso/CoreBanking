@@ -1,5 +1,6 @@
 using CoreBanking.API.Apis;
 using CoreBanking.Infrastructure.Entity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 
@@ -175,6 +176,49 @@ namespace CoreBanking.IntegrationTests.Tests
 
             Assert.Equal(account1Added.Balance - transferRequest.Amount, account1Transfer!.Balance);
             Assert.Equal(account2Added.Balance + transferRequest.Amount, account2Transfer!.Balance);
+        }
+
+        [Fact]
+        public async Task Create_Customer_Should_Return_Ok()
+        {
+            // Initital app host
+            var cancellationToken = CancellationToken.None;
+            var appHost = await DistributedApplicationTestingBuilder.CreateAsync<Projects.CoreBanking_AppHost>(cancellationToken);
+
+            appHost.Services.ConfigureHttpClientDefaults(clientBuilder =>
+            {
+                clientBuilder.AddStandardResilienceHandler();
+            });
+
+            appHost.Configuration.AddJsonFile(
+                Path.Combine(AppContext.BaseDirectory, "appsettings.json"),
+                optional: false,
+                reloadOnChange: false);
+
+            using var app = await appHost.BuildAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+            await app.StartAsync(cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+
+            using var httpClient = app.CreateHttpClient("corebanking-api", "https");
+            await app.ResourceNotifications.WaitForResourceHealthyAsync("corebanking-api", cancellationToken).WaitAsync(DefaultTimeout, cancellationToken);
+
+            // arrange
+            var customer = new Customer()
+            {
+                Id = Guid.NewGuid(),
+                Name = "locnso",
+                Address = "Nam dinh"
+            };
+            
+            var token = appHost.Configuration["Jwt:Token"];
+
+            // act
+            httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {token}");
+            //httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            var result = await httpClient.PostAsJsonAsync("api/v1/corebanking/customers", customer);
+
+            // assert
+            Assert.Equal(HttpStatusCode.OK, result.StatusCode);
+
         }
     }
 }
