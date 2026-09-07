@@ -15,15 +15,44 @@ public static class CoreBankingApi
         var v1 = vApi.MapGroup("api/v{version:apiVersion}/corebanking").HasApiVersion(1, 0);
 
         v1.MapGet("/customers", GetCustomers);
+        v1.MapGet("/customers/{id:guid}", GetCustomerById);
         v1.MapPost("/customers", CreateCustomer);
 
         v1.MapGet("/accounts", GetAccounts);
+        v1.MapGet("/accounts/{id}", GetAccountByNumber);
         v1.MapPost("/accounts", CreateAccount);
         v1.MapPut("/accounts/{id:guid}/deposit", Deposit);
         v1.MapPut("/accounts/{id:guid}/withdraw", Withdraw);
         v1.MapPut("/accounts/{id:guid}/transfer", Transfer);
 
         return builder;
+    }
+
+    private static async Task<Results<Ok<Account>, NotFound>> GetAccountByNumber(
+        [AsParameters] CoreBankingServices services,
+        string id)
+    {
+        var account = await services.DbContext.Accounts.FirstOrDefaultAsync(a => a.Number == id);
+        if (account is null)
+        {
+            services.Logger.LogError("Account not found");
+            return TypedResults.NotFound();
+        }
+        return TypedResults.Ok(account);
+    }
+
+    private static async Task<Results<Ok<Customer>, NotFound>> GetCustomerById(
+        [AsParameters] CoreBankingServices services,
+        Guid id)
+    {
+        var customer = await services.DbContext.Customers.FindAsync(id);
+        if (customer is null)
+        {
+            services.Logger.LogError("Customer not found");
+            return TypedResults.NotFound();
+        }
+
+        return TypedResults.Ok(customer);
     }
 
     public static async Task<Results<Ok, BadRequest>> Transfer(
@@ -229,7 +258,7 @@ public static class CoreBankingApi
         }
 
         account.Number = GenerateAccountNumber();
-        
+
         services.DbContext.Accounts.Add(account);
         await services.DbContext.SaveChangesAsync();
 
